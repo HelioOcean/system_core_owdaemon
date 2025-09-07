@@ -19,7 +19,7 @@ extern int qemu_main(int argc, char **argv);
 
 #define CMD_SOCKET_PATH  "/data/ow/owdaemon.socket"
 #define QMP_SOCKET_PATH  "/data/ow/owqmp.socket"
-#define FB_SOCKET_PATH   "/data/ow/owfb.socket" 
+#define FB_SOCKET_PATH   "/data/ow/owfb.socket"
 
 pthread_t qemu_thread_id = 0;
 pthread_t fb_stream_thread_id = 0;
@@ -113,10 +113,9 @@ void *fb_stream_thread(void *args) {
     }
 
     unsigned char *plaintext = (unsigned char *)fbp;
-    unsigned char *ciphertext = malloc(screensize + EVP_MAX_BLOCK_LENGTH); 
-    unsigned char iv[12]; 
+    unsigned char *ciphertext = malloc(screensize + EVP_MAX_BLOCK_LENGTH);
+    unsigned char iv[12];
     unsigned char tag[16];
-
     EVP_CIPHER_CTX *ctx;
 
     printf("owdaemon: Starting encrypted framebuffer stream...\n");
@@ -188,7 +187,7 @@ int main(void) {
         int client_fd = accept(server_fd, NULL, NULL);
         if (client_fd < 0) {
             perror("owdaemon: accept error");
-            continue; 
+            continue;
         }
         handle_client_connection(client_fd);
         close(client_fd);
@@ -206,15 +205,15 @@ void handle_client_connection(int client_fd) {
     if (n <= 0) {
         return;
     }
-    buffer[n] = '\0'; 
+    buffer[n] = '\0';
 
     if (strncmp(buffer, "start ", 6) == 0 && !qemu_running) {
         printf("owdaemon: Received start command.\n");
         char *full_args_str = buffer + 6;
         int argc = 0;
-        char **argv = malloc(sizeof(char *) * 256); // Max 256 args
+        char **argv = malloc(sizeof(char *) * 256);
 
-        argv[argc++] = strdup("qemu-system-aarch64"); // QEMU expects this
+        argv[argc++] = strdup("qemu-system-aarch64");
 
         char *p = strtok(full_args_str, " ");
         while (p != NULL) {
@@ -230,9 +229,9 @@ void handle_client_connection(int client_fd) {
         qemu_running = 1;
         if (pthread_create(&qemu_thread_id, NULL, qemu_thread_start, thread_args) != 0) {
             perror("owdaemon: pthread_create error for qemu");
-            qemu_running = 0; 
+            qemu_running = 0;
         } else {
-            pthread_detach(qemu_thread_id); 
+            pthread_detach(qemu_thread_id);
         }
 
     } else if (strcmp(buffer, "pause") == 0 && qemu_running) {
